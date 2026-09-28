@@ -1,0 +1,21 @@
+# Virtual Environments
+venv/
+env/
+.env
+
+# Python Cache
+__pycache__/
+*.pyc
+*.pyo
+*.pyd
+
+# Temporary simulation caches
+.streamlit_config/
+.matplotlib_config/
+*.aiff
+temp_speech.aiff
+sim_*.wav
+
+# OS files
+.DS_Store
+Thumbs.db
