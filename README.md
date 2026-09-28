@@ -3,42 +3,68 @@
 [![Smart India Hackathon 2026](https://img.shields.io/badge/SIH-2026-blue?style=for-the-badge)](https://sih.gov.in)
 [![Problem Statement](https://img.shields.io/badge/PS_Code-SIH_26052-red?style=for-the-badge)](https://sih.gov.in)
 [![Category](https://img.shields.io/badge/Category-Hardware_/_Embedded_DSP-green?style=for-the-badge)](https://sih.gov.in)
-[![Team](https://img.shields.io/badge/Team-Variants-orange?style=for-the-badge)](https://github.com)
+[![Team](https://img.shields.io/badge/Team-PHALANX-orange?style=for-the-badge)](https://github.com)
 
 > **"Clear Communication. Stronger Missions."**  
-> A real-time, low-latency, causal hybrid speech enhancement architecture (Causal DCCRN + Normalized LMS) engineered for mission-critical tactical radio communications in extreme combat acoustic environments.
-
----
-
-## 📌 Executive Summary
-High-intensity battlefield operations expose soldiers and tactical radio operators to a chaotic combination of:
-1. **Steady, stationary mechanical noise** (helicopter rotor blade drone, armored vehicle / tank diesel engines, HVAC).
-2. **Violent, non-stationary impulsive noise** (artillery explosions, heavy gunfire, tactical sirens).
-
-Existing systems force a trade-off: **Classical DSP (NLMS)** fails against abrupt impulsive gunfire, while **Deep Learning models** burn excessive battery power, generate computational heat, and introduce unviable latency.
-
-**Sonic SHIELD** resolves this trade-off using a **Dual-Stage Hybrid Architecture**:
-* **Stage 1 (Deep Complex CRN):** Operates causally on complex spectrograms to isolate sudden non-stationary shocks and impulsive blasts while preserving voice phase and clarity.
-* **Stage 2 (Time-Domain Normalized LMS Filter):** Runs sample-by-sample to subtract residual stationary drone tones.
-* **Smart Sleep-Wake Gating:** Powers down the neural network during speech pauses via low-power Voice Activity Detection (VAD), cutting active thermal duty cycle by **>70%**.
+> A real-time, low-latency, causal hybrid speech enhancement architecture (Frequency-Domain Causal DCCRN + Time-Domain Normalized LMS) engineered for mission-critical tactical radio communications in extreme combat acoustic environments.
 
 ---
 
 ## 🏗️ System Architecture Pipeline
 
+The system combines **Frequency-Domain AI** for dynamic/impulsive noise isolation with **Time-Domain DSP** for continuous stationary adaptation, gated by an embedded **Sleep/Wake Low-Power Controller**:
+
 ```mermaid
-flowchart LR
-    A["🎙️ Single-Mic Combat Input\n(Speech + Defence Noise)"] --> B["🔄 50ms Circular Buffer\n(Zero First-Syllable Cut)"]
-    B --> C{"🔍 Low-Power VAD\n(Spectral Formant Tracker)"}
-    
-    C -- "Speech Detected (Wake)" --> D["🧠 Stage 1: Causal DCCRN\n(Complex Ratio Masking)"]
-    D --> E["⚡ Stage 2: Adaptive NLMS\n(Stationary Hum Removal)"]
-    
-    C -- "Silence / Noise Only (Sleep)" --> F["💤 Standby Mode\n(NLMS Only, DCCRN Dormant)"]
-    F --> G["🔇 Attenuated Tactical Channel"]
-    
-    E --> H["🔊 Clean Intelligible Voice\n(STOI > 0.85, Latency < 2ms)"]
+flowchart TD
+    subgraph INPUT ["1. INPUT AUDIO (Single Microphone)"]
+        S["🎙️ Speech Signal (User/Mic)"]
+        D["💥 Defence Noises (Impulsive/Combat)"]
+        E["🚜 Environmental Noises (Engine/Wind/Machinery)"]
+        S & D & E --> MIX["Raw Mixed Audio"]
+    end
+
+    subgraph PRE ["2. FRONT-END BUFFER & LOW-POWER VAD"]
+        MIX --> BUF["🔄 50ms Circular Buffer\n(Prevents First-Syllable Cut)"]
+        MIX --> VAD["⚡ TENVAD: Speech-Only VAD Trigger\n(Low-Power Vocal Formant Tracker)"]
+    end
+
+    subgraph AI ["3. FREQUENCY-DOMAIN AI (Dynamic Noise Isolation)"]
+        VAD -- "Wake Signal" --> DCCRN_BLOCK["🧠 Dual-Output DCCRN (Sleep/Wake)\nPredicts Complex Ratio Mask (CRM)"]
+        BUF -- "Buffered Audio" --> STFT["STFT (Magnitude + Phase)"]
+        STFT --> DCCRN_BLOCK
+        DCCRN_BLOCK --> OUT_S["Enhanced Speech Mask"]
+        DCCRN_BLOCK --> OUT_N["Noise Reference Mask"]
+        OUT_S & OUT_N --> ISTFT["iSTFT (Reconstructed Audio)"]
+    end
+
+    subgraph DSP ["4. TIME-DOMAIN DSP (Adaptive Cancellation)"]
+        ISTFT --> ES["Enhanced Speech"]
+        ISTFT --> NR["Noise Reference Input"]
+        ES --> NLMS["⚡ Always-On NLMS Filter"]
+        NR --> NLMS
+        NLMS --> CLEAN["🔊 Final Cleaned Audio (High Clarity)"]
+        CLEAN -. "Weight Update Feedback" .-> NLMS
+    end
 ```
+
+---
+
+## 📌 Core Architectural Pillars
+
+### 1. Dual-Path Input: 50ms Circular Buffer + TENVAD Trigger
+* **50ms Circular Buffer:** A rolling ring buffer continuously captures the last 50 ms of incoming audio. When voice abruptly breaks silence, the neural network pulls from this pre-roll history, guaranteeing **zero first-syllable clipping**.
+* **TENVAD (Tactical Environment Noise VAD):** Operates on acoustic spectral flux and vocal formant harmonics (300 Hz–3400 Hz) rather than simple energy thresholds. This prevents false triggers from 110 dB tank engine rumble.
+
+### 2. Frequency-Domain AI: Dual-Output Causal DCCRN
+* Runs on **STFT Complex Spectrograms** (retaining real and imaginary channels to preserve speech phase).
+* Outputs two simultaneous masks:
+  1. **Speech Mask:** Isolates clean vocal harmonics.
+  2. **Noise Reference Mask:** Generates an internal synthetic noise reference from a single microphone stream without requiring an external secondary noise mic.
+
+### 3. Time-Domain DSP: Always-On NLMS Filter
+* Takes the reconstructed **Enhanced Speech** as primary input and the **Noise Reference** as reference channel.
+* Runs continuously sample-by-sample ($<0.8\text{ ms}$ compute) to subtract residual engine drones and vehicle stationary hums.
+* **Weight Update Feedback:** Weight adaptation updates during background pauses and freezes during active speech, eliminating speech self-cancellation.
 
 ---
 
@@ -53,7 +79,7 @@ The pipeline has been benchmarked on a simulated tactical stream containing mixe
 | **Perceived Speech Quality (PESQ)**| **1.05** | **2.78** | **> 2.50 (Natural Voice)** | ITU-T P.862 |
 | **Processing Latency per Frame** | — | **1.86 ms** | **< 20.0 ms (Real-Time)** | Per-frame on ARM CPU |
 | **Model Memory Footprint** | — | **< 28 MB** | **< 50 MB Edge Limit** | ONNX Quantized INT8 |
-| **Thermal Duty Cycle Reduction** | — | **~25% to 75%** | **Power & Heat Savings** | Embedded Tactical VAD |
+| **Thermal Duty Cycle Reduction** | — | **~25% to 75%** | **Power & Heat Savings** | TENVAD Sleep/Wake |
 
 ---
 
@@ -76,7 +102,7 @@ See detailed research citations, comparative matrices, and mathematical formulat
 
 ### 1. Clone & Set Up Virtual Environment
 ```bash
-git clone https://github.com/Yogi1218/sonic-shield.git
+git clone https://github.com/YOUR_USERNAME/sonic-shield.git
 cd sonic-shield
 python3 -m venv venv
 source venv/bin/activate
@@ -94,12 +120,11 @@ Double-click `simulation.html` in your file browser, or run:
 ```bash
 open simulation.html
 ```
-*Features interactive noise toggles, real human tactical radio speech, and dual spectrum analyzers.*
 
 ---
 
-## 👥 Team Variants (SCET Surat)
-* **Team Name:** Team Variants  
+## 👥 Team PHALANX
+* **Team Name:** Team PHALANX  
 * **Problem Statement:** SIH 26052 — AI/ML-Enabled Adaptive Noise Cancellation System for Defence  
 * **Category:** Hardware / Embedded DSP  
 * **Status:** Smart India Hackathon 2026 Round 1 Submission

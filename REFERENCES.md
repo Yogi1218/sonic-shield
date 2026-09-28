@@ -2,7 +2,7 @@
 
 ### **Project:** Sonic SHIELD — AI/ML Adaptive Noise Cancellation for Tactical Defence
 ### **Problem Statement:** SIH 26052
-### **Team:** Team Variants
+### **Team:** Team PHALANX
 
 ---
 
