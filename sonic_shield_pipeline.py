@@ -255,7 +255,7 @@ def run_sonic_shield_pipeline(frame_size_ms=10, sample_rate=16000):
       - Per-frame latency benchmarking (<20ms requirement)
     """
     print("=" * 80)
-    print(f"🛡️  SONIC SHIELD: Embedded Real-Time Adaptive Noise Cancellation Simulation")
+    print(f"SONIC SHIELD: Embedded Real-Time Adaptive Noise Cancellation Simulation")
     print(f"    Target Frame Size: {frame_size_ms} ms (Hop: {int(frame_size_ms * sample_rate / 1000)} samples @ {sample_rate} Hz)")
     print(f"    Latency Budget:    < 20.0 ms per frame")
     print("=" * 80)
@@ -338,7 +338,7 @@ def run_sonic_shield_pipeline(frame_size_ms=10, sample_rate=16000):
 
         # Periodic telemetry print
         if (f_idx + 1) % 50 == 0 or f_idx == total_frames - 1:
-            state_str = "🔥 DCCRN WAKE" if is_speech_active else "💤 DCCRN SLEEP (NLMS ONLY)"
+            state_str = "[WAKE] DCCRN ACTIVE" if is_speech_active else "[SLEEP] NLMS ONLY"
             print(f"Frame {f_idx+1:03d}/{total_frames} | State: {state_str:<26} | Latency: {frame_latency_ms:.3f} ms")
 
     # ==================================================================================
@@ -350,7 +350,7 @@ def run_sonic_shield_pipeline(frame_size_ms=10, sample_rate=16000):
     dccrn_duty_cycle = (dccrn_invocations / total_frames) * 100.0
 
     print("\n" + "=" * 80)
-    print("📊 SONIC SHIELD EMBEDDED DSP BENCHMARK RESULTS")
+    print("SONIC SHIELD EMBEDDED DSP BENCHMARK RESULTS")
     print("=" * 80)
     print(f"Total Stream Duration:       {len(raw_input)/sr:.2f} seconds ({total_frames} frames @ {frame_size_ms}ms)")
     print(f"Average Frame Latency:       {avg_latency:.3f} ms   (Budget: < 20.0 ms) -> {'[PASSED]' if avg_latency < 20 else '[FAILED]'}")

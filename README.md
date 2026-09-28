@@ -1,4 +1,4 @@
-# 🛡️ Sonic SHIELD — AI/ML Adaptive Noise Cancellation for Defence Communications
+# Sonic SHIELD — AI/ML Adaptive Noise Cancellation for Defence Communications
 
 [![Smart India Hackathon 2026](https://img.shields.io/badge/SIH-2026-blue?style=for-the-badge)](https://sih.gov.in)
 [![Problem Statement](https://img.shields.io/badge/PS_Code-SIH_26052-red?style=for-the-badge)](https://sih.gov.in)
@@ -10,26 +10,26 @@
 
 ---
 
-## 🏗️ System Architecture Pipeline
+## System Architecture Pipeline
 
-The system combines **Frequency-Domain AI** for dynamic/impulsive noise isolation with **Time-Domain DSP** for continuous stationary adaptation, gated by an embedded **Sleep/Wake Low-Power Controller**:
+The system combines **Frequency-Domain AI** for dynamic and impulsive noise isolation with **Time-Domain DSP** for continuous stationary adaptation, gated by an embedded **Sleep/Wake Low-Power Controller**:
 
 ```mermaid
 flowchart TD
     subgraph INPUT ["1. INPUT AUDIO (Single Microphone)"]
-        S["🎙️ Speech Signal (User/Mic)"]
-        D["💥 Defence Noises (Impulsive/Combat)"]
-        E["🚜 Environmental Noises (Engine/Wind/Machinery)"]
+        S["Speech Signal (User/Mic)"]
+        D["Defence Noises (Impulsive/Combat)"]
+        E["Environmental Noises (Engine/Wind/Machinery)"]
         S & D & E --> MIX["Raw Mixed Audio"]
     end
 
     subgraph PRE ["2. FRONT-END BUFFER & LOW-POWER VAD"]
-        MIX --> BUF["🔄 50ms Circular Buffer\n(Prevents First-Syllable Cut)"]
-        MIX --> VAD["⚡ TENVAD: Speech-Only VAD Trigger\n(Low-Power Vocal Formant Tracker)"]
+        MIX --> BUF["50ms Circular Buffer\n(Prevents First-Syllable Cut)"]
+        MIX --> VAD["TENVAD: Speech-Only VAD Trigger\n(Low-Power Vocal Formant Tracker)"]
     end
 
     subgraph AI ["3. FREQUENCY-DOMAIN AI (Dynamic Noise Isolation)"]
-        VAD -- "Wake Signal" --> DCCRN_BLOCK["🧠 Dual-Output DCCRN (Sleep/Wake)\nPredicts Complex Ratio Mask (CRM)"]
+        VAD -- "Wake Signal" --> DCCRN_BLOCK["Dual-Output DCCRN (Sleep/Wake)\nPredicts Complex Ratio Mask (CRM)"]
         BUF -- "Buffered Audio" --> STFT["STFT (Magnitude + Phase)"]
         STFT --> DCCRN_BLOCK
         DCCRN_BLOCK --> OUT_S["Enhanced Speech Mask"]
@@ -40,16 +40,16 @@ flowchart TD
     subgraph DSP ["4. TIME-DOMAIN DSP (Adaptive Cancellation)"]
         ISTFT --> ES["Enhanced Speech"]
         ISTFT --> NR["Noise Reference Input"]
-        ES --> NLMS["⚡ Always-On NLMS Filter"]
+        ES --> NLMS["Always-On NLMS Filter"]
         NR --> NLMS
-        NLMS --> CLEAN["🔊 Final Cleaned Audio (High Clarity)"]
+        NLMS --> CLEAN["Final Cleaned Audio (High Clarity)"]
         CLEAN -. "Weight Update Feedback" .-> NLMS
     end
 ```
 
 ---
 
-## 📌 Core Architectural Pillars
+## Core Architectural Pillars
 
 ### 1. Dual-Path Input: 50ms Circular Buffer + TENVAD Trigger
 * **50ms Circular Buffer:** A rolling ring buffer continuously captures the last 50 ms of incoming audio. When voice abruptly breaks silence, the neural network pulls from this pre-roll history, guaranteeing **zero first-syllable clipping**.
@@ -63,12 +63,12 @@ flowchart TD
 
 ### 3. Time-Domain DSP: Always-On NLMS Filter
 * Takes the reconstructed **Enhanced Speech** as primary input and the **Noise Reference** as reference channel.
-* Runs continuously sample-by-sample ($<0.8\text{ ms}$ compute) to subtract residual engine drones and vehicle stationary hums.
+* Runs continuously sample-by-sample (<0.8 ms compute) to subtract residual engine drones and vehicle stationary hums.
 * **Weight Update Feedback:** Weight adaptation updates during background pauses and freezes during active speech, eliminating speech self-cancellation.
 
 ---
 
-## 📊 Quantitative Benchmark Results
+## Quantitative Benchmark Results
 
 The pipeline has been benchmarked on a simulated tactical stream containing mixed human voice, tank engine hum, and impulsive gunfire bursts:
 
@@ -83,9 +83,9 @@ The pipeline has been benchmarked on a simulated tactical stream containing mixe
 
 ---
 
-## 🔬 Literature Survey & Research Gaps
+## Literature Survey & Research Gaps
 See detailed research citations, comparative matrices, and mathematical formulations in:  
-📄 **[REFERENCES.md](REFERENCES.md)**
+**[REFERENCES.md](REFERENCES.md)**
 
 * **Hu, Y. et al. (Interspeech 2020):** DCCRN: Deep Complex Convolution Recurrent Network for Phase-Aware Speech Enhancement.
 * **Haykin, S. (2013):** Adaptive Filter Theory (Normalized LMS Formulations).
@@ -94,7 +94,7 @@ See detailed research citations, comparative matrices, and mathematical formulat
 
 ---
 
-## ⚡ Quickstart & Local Reproduction
+## Quickstart & Local Reproduction
 
 ### Prerequisites
 * Python 3.9+
@@ -113,7 +113,6 @@ pip install torch soundfile librosa matplotlib pystoi streamlit
 ```bash
 python sonic_shield_pipeline.py
 ```
-*Outputs real-time frame logs, sleep-wake state transitions, and per-frame latency benchmarks.*
 
 ### 3. Open the Interactive Testbench Dashboard
 Double-click `simulation.html` in your file browser, or run:
@@ -123,7 +122,7 @@ open simulation.html
 
 ---
 
-## 👥 Team PHALANX
+## Team PHALANX
 * **Team Name:** Team PHALANX  
 * **Problem Statement:** SIH 26052 — AI/ML-Enabled Adaptive Noise Cancellation System for Defence  
 * **Category:** Hardware / Embedded DSP  

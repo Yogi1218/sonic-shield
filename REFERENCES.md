@@ -1,4 +1,4 @@
-# 📚 Literature Survey & Theoretical References
+# Literature Survey & Theoretical References
 
 ### **Project:** Sonic SHIELD — AI/ML Adaptive Noise Cancellation for Tactical Defence
 ### **Problem Statement:** SIH 26052

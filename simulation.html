@@ -560,7 +560,7 @@
                 <div class="dot-blink"></div>
                 SYSTEM ACTIVE
             </div>
-            <button class="hw-btn" style="padding: 4px 8px; font-size: 10px;" onclick="resetBench()">↺ RESET</button>
+            <button class="hw-btn" style="padding: 4px 8px; font-size: 10px;" onclick="resetBench()">RESET</button>
         </div>
     </div>
 
@@ -634,10 +634,10 @@
             <!-- Control Buttons -->
             <div class="ctl-row">
                 <button class="hw-btn red" onclick="playAudioStream('noisy')">
-                    ▶ NOISY AUDIO
+                    PLAY NOISY AUDIO
                 </button>
                 <button class="hw-btn" id="btnPipeline" onclick="runPipelineDemo()">
-                    ⚡ RUN PIPELINE
+                    RUN PIPELINE
                 </button>
             </div>
         </div>
@@ -738,7 +738,7 @@
             </div>
 
             <button class="hw-btn green" style="margin-top: 8px;" onclick="playAudioStream('enhanced')">
-                ▶ PLAY ENHANCED AUDIO
+                PLAY ENHANCED AUDIO
             </button>
         </div>
     </div>
@@ -884,7 +884,7 @@ function resetBench() {
     }
     document.getElementById('engStatusTag').innerText = 'ONLINE // READY';
     document.getElementById('engStatusTag').style.color = 'var(--text-dim)';
-    document.getElementById('btnPipeline').innerText = '⚡ RUN PIPELINE';
+    document.getElementById('btnPipeline').innerText = 'RUN PIPELINE';
     document.getElementById('btnPipeline').disabled = false;
 
     renderAllScopes();
@@ -934,7 +934,7 @@ function runPipelineDemo() {
         document.getElementById('engStatusTag').innerText = 'CANCELLATION ACTIVE';
         document.getElementById('engStatusTag').style.color = 'var(--green)';
         btn.disabled = false;
-        btn.innerText = '↺ REPLAY PIPELINE';
+        btn.innerText = 'REPLAY PIPELINE';
         isPipelineRunning = false;
     }, 3200);
 }
