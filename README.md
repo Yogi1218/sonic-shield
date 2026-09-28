@@ -1,129 +1,169 @@
-# Sonic SHIELD — AI/ML Adaptive Noise Cancellation for Defence Communications
+# Sonic SHIELD: Adaptive Noise Cancellation for Defence Radios
 
-[![Smart India Hackathon 2026](https://img.shields.io/badge/SIH-2026-blue?style=for-the-badge)](https://sih.gov.in)
-[![Problem Statement](https://img.shields.io/badge/PS_Code-SIH_26052-red?style=for-the-badge)](https://sih.gov.in)
-[![Category](https://img.shields.io/badge/Category-Hardware_/_Embedded_DSP-green?style=for-the-badge)](https://sih.gov.in)
-[![Team](https://img.shields.io/badge/Team-PHALANX-orange?style=for-the-badge)](https://github.com)
-
-> **"Clear Communication. Stronger Missions."**  
-> A real-time, low-latency, causal hybrid speech enhancement architecture (Frequency-Domain Causal DCCRN + Time-Domain Normalized LMS) engineered for mission-critical tactical radio communications in extreme combat acoustic environments.
+Smart India Hackathon 2026 | Problem Statement: SIH 26052 | Category: Hardware / Embedded DSP  
+Team: PHALANX | Department of Electronics and Communication Engineering, SCET Surat
 
 ---
 
-## System Architecture Pipeline
+## 1. What is Sonic SHIELD?
 
-The system combines **Frequency-Domain AI** for dynamic and impulsive noise isolation with **Time-Domain DSP** for continuous stationary adaptation, gated by an embedded **Sleep/Wake Low-Power Controller**:
+In tactical military operations, soldiers and operators rely heavily on voice radio networks. However, battlefields are acoustically punishing environments. Voice transmissions get overwhelmed by three distinct types of interference at the same time:
+* **Stationary noise:** Constant low-frequency drone from tanks, armored vehicle diesel engines, and mobile generators.
+* **Non-stationary noise:** Rapidly changing sounds like helicopter rotor blades, wind wash, sirens, and tactical chatter.
+* **Impulsive noise:** Sudden, extreme shockwaves from gunshots, mortar fire, and artillery blasts.
 
-```mermaid
-flowchart TD
-    subgraph INPUT ["1. INPUT AUDIO (Single Microphone)"]
-        S["Speech Signal (User/Mic)"]
-        D["Defence Noises (Impulsive/Combat)"]
-        E["Environmental Noises (Engine/Wind/Machinery)"]
-        S & D & E --> MIX["Raw Mixed Audio"]
-    end
+Traditional noise cancelling headsets rely either on classic adaptive filters (like LMS/NLMS) or modern deep learning models. Both have major flaws in combat:
+* Adaptive filters alone work well on steady engine drones, but diverge or blow up when an explosion happens, and cannot separate complex chatter.
+* Deep learning models clean complex noise well, but they run continuously at 100% capacity, draining the soldier's radio battery and overheating embedded processors. Furthermore, sudden gunshot shockwaves smear neural recurrent states, causing clipped syllables and robotic distortion.
 
-    subgraph PRE ["2. FRONT-END BUFFER & LOW-POWER VAD"]
-        MIX --> BUF["50ms Circular Buffer\n(Prevents First-Syllable Cut)"]
-        MIX --> VAD["TENVAD: Speech-Only VAD Trigger\n(Low-Power Vocal Formant Tracker)"]
-    end
+**Sonic SHIELD** is our hybrid system designed to solve this exact problem. It bridges low-power digital signal processing (DSP) and neural speech enhancement into a practical, single-microphone pipeline built to run on embedded hardware.
 
-    subgraph AI ["3. FREQUENCY-DOMAIN AI (Dynamic Noise Isolation)"]
-        VAD -- "Wake Signal" --> DCCRN_BLOCK["Dual-Output DCCRN (Sleep/Wake)\nPredicts Complex Ratio Mask (CRM)"]
-        BUF -- "Buffered Audio" --> STFT["STFT (Magnitude + Phase)"]
-        STFT --> DCCRN_BLOCK
-        DCCRN_BLOCK --> OUT_S["Enhanced Speech Mask"]
-        DCCRN_BLOCK --> OUT_N["Noise Reference Mask"]
-        OUT_S & OUT_N --> ISTFT["iSTFT (Reconstructed Audio)"]
-    end
+---
 
-    subgraph DSP ["4. TIME-DOMAIN DSP (Adaptive Cancellation)"]
-        ISTFT --> ES["Enhanced Speech"]
-        ISTFT --> NR["Noise Reference Input"]
-        ES --> NLMS["Always-On NLMS Filter"]
-        NR --> NLMS
-        NLMS --> CLEAN["Final Cleaned Audio (High Clarity)"]
-        CLEAN -. "Weight Update Feedback" .-> NLMS
-    end
+## 2. How the System Works (Pipeline Flow)
+
+```
+                    Single Tactical Microphone Input
+                                  |
+            +---------------------+---------------------+
+            |                                           |
+            v                                           v
+    50ms Rolling Buffer                       TENVAD Trigger Unit
+ (Captures speech onset before           (Analyzes voice formant energy
+   clipping first syllables)                between 300 Hz and 3.4 kHz)
+            |                                           |
+            +---------------------+---------------------+
+                                  |
+                       Is vocal speech present?
+                      /                        \
+             [YES: Trigger Awake]         [NO: Low-Power Sleep]
+                      |                                  |
+                      v                                  v
+          Dual-Output Causal DCCRN             Bypass Neural Model
+       (Deep Complex Convolution Net)         (Saves battery & thermals)
+         /                          \                    |
+        v                            v                   |
+ Enhanced Speech Mask       Noise Reference Mask         |
+        \                            /                   |
+         +------------+-------------+                    |
+                      |                                  |
+                      v                                  v
+              iSTFT Audio Synthesis               Residual Background
+                      |                                  |
+                      +-------------------+--------------+
+                                          |
+                                          v
+                                Always-On NLMS Filter
+                        (Subtracts residual engine drone;
+                       freezes updates during active voice)
+                                          |
+                                          v
+                              Clean Tactical Speech Output
+```
+
+### Core Design Principles
+
+1. **Pre-roll Buffer (50 ms):** When an operator starts speaking, human vocal cords take a few tens of milliseconds before typical voice triggers register. Without a buffer, the first syllable ("Fire", "Hold", "Alpha") is cut off. Our continuous circular ring buffer holds the trailing 50 ms so the neural network gets the complete word from the very first phoneme.
+2. **Tactical Voice Activity Detector (TENVAD):** Instead of simple volume thresholds that trigger on 110 dB tank engine roar, TENVAD tracks spectral flux and harmonic ratios typical of human speech (300 Hz to 3400 Hz).
+3. **Dual-Output DCCRN:** Unlike standard speech enhancement models that only output cleaned speech, our causal complex-valued network outputs two channels: an enhanced speech mask and a synthetic noise reference mask from a single microphone.
+4. **Always-On NLMS Filter:** The noise reference generated by the neural stage is routed into a time-domain Normalized Least Mean Squares (NLMS) filter. This lightweight filter runs continuously with sub-millisecond latency to scrub out any steady background hum that slipped through. To avoid cancelling the soldier's own voice, filter weight updates automatically freeze during active speech and resume adaptation during pauses.
+
+---
+
+## 3. Benchmarks and Measured Performance
+
+We tested the complete pipeline against simulated combat audio combining clean speech (LibriSpeech corpus), steady engine noise (NOISEX-92 benchmark), and sharp impulsive gunshot blasts down to negative signal-to-noise ratios (-5 dB SNR):
+
+| Evaluation Metric | Noisy Tactical Input | Sonic SHIELD Output | Minimum Required | Standard Tested |
+| :--- | :---: | :---: | :---: | :--- |
+| **Signal-to-Noise Ratio (SNR)** | **-5.00 dB** | **+16.80 dB** | > 15 dB (+21.8 dB gain) | ITU-T P.56 |
+| **Speech Intelligibility (STOI)** | **0.65** | **0.89** | > 0.85 (Clear comprehension) | Short-Time Objective Intelligibility |
+| **Perceptual Speech Quality (PESQ)** | **1.05** | **2.78** | > 2.50 (Natural voice tone) | ITU-T P.862 Standard |
+| **Processing Latency per Frame** | — | **1.86 ms** | < 20.0 ms (Real-time limit) | Streaming causal frame benchmark |
+| **Embedded Model Footprint** | — | **< 28 MB** | < 50 MB Edge hardware limit | Quantized INT8 weights |
+| **Compute & Power Reduction** | — | **25% to 75%** | Maximizes field battery life | Dynamic TENVAD duty cycling |
+
+---
+
+## 4. Repository Structure
+
+```
+.
+├── README.md                      # Project overview, architecture, and reproduction steps
+├── REFERENCES.md                  # Literature citations, theoretical equations, and datasets
+├── docs/
+│   ├── LITERATURE_SURVEY_ANALYSIS.md # Full analysis of 10 research papers and research gaps
+│   └── NLMS_MATHEMATICAL_MODEL.md    # Detailed mathematical derivations of the NLMS filter
+├── sonic_shield_pipeline.py       # End-to-end streaming test pipeline with latency timers
+├── simulation.html                # Standalone SDR dashboard with real audio demonstrations
+├── model.py                       # Causal Complex Conv / LSTM block definitions
+├── lms_filter.py                  # Sample-by-sample NLMS adaptive filter implementation
+├── dataset.py                     # Synthetic audio mixer for tactical noise evaluation
+├── app.py                         # Streamlit interactive testing interface
+└── requirements.txt               # Python package dependencies
 ```
 
 ---
 
-## Core Architectural Pillars
-
-### 1. Dual-Path Input: 50ms Circular Buffer + TENVAD Trigger
-* **50ms Circular Buffer:** A rolling ring buffer continuously captures the last 50 ms of incoming audio. When voice abruptly breaks silence, the neural network pulls from this pre-roll history, guaranteeing **zero first-syllable clipping**.
-* **TENVAD (Tactical Environment Noise VAD):** Operates on acoustic spectral flux and vocal formant harmonics (300 Hz–3400 Hz) rather than simple energy thresholds. This prevents false triggers from 110 dB tank engine rumble.
-
-### 2. Frequency-Domain AI: Dual-Output Causal DCCRN
-* Runs on **STFT Complex Spectrograms** (retaining real and imaginary channels to preserve speech phase).
-* Outputs two simultaneous masks:
-  1. **Speech Mask:** Isolates clean vocal harmonics.
-  2. **Noise Reference Mask:** Generates an internal synthetic noise reference from a single microphone stream without requiring an external secondary noise mic.
-
-### 3. Time-Domain DSP: Always-On NLMS Filter
-* Takes the reconstructed **Enhanced Speech** as primary input and the **Noise Reference** as reference channel.
-* Runs continuously sample-by-sample (<0.8 ms compute) to subtract residual engine drones and vehicle stationary hums.
-* **Weight Update Feedback:** Weight adaptation updates during background pauses and freezes during active speech, eliminating speech self-cancellation.
-
----
-
-## Quantitative Benchmark Results
-
-The pipeline has been benchmarked on a simulated tactical stream containing mixed human voice, tank engine hum, and impulsive gunfire bursts:
-
-| Metric | Degraded Combat Input | Sonic SHIELD Output | Evaluation Target | Standard / Protocol |
-| :--- | :---: | :---: | :---: | :--- |
-| **Signal-to-Noise Ratio (SNR)** | **-5.00 dB** | **+16.8 dB** | **> 15 dB (+21.8 dB Gain)** | ITU-T P.56 |
-| **Speech Intelligibility (STOI)** | **0.65** | **0.89** | **> 0.85 (Pass)** | Objective Intelligibility |
-| **Perceived Speech Quality (PESQ)**| **1.05** | **2.78** | **> 2.50 (Natural Voice)** | ITU-T P.862 |
-| **Processing Latency per Frame** | — | **1.86 ms** | **< 20.0 ms (Real-Time)** | Per-frame on ARM CPU |
-| **Model Memory Footprint** | — | **< 28 MB** | **< 50 MB Edge Limit** | ONNX Quantized INT8 |
-| **Thermal Duty Cycle Reduction** | — | **~25% to 75%** | **Power & Heat Savings** | TENVAD Sleep/Wake |
-
----
-
-## Literature Survey & Research Gaps
-See detailed research citations, comparative matrices, and mathematical formulations in:  
-**[REFERENCES.md](REFERENCES.md)**
-
-* **Hu, Y. et al. (Interspeech 2020):** DCCRN: Deep Complex Convolution Recurrent Network for Phase-Aware Speech Enhancement.
-* **Haykin, S. (2013):** Adaptive Filter Theory (Normalized LMS Formulations).
-* **Panayotov, V. et al. (2015):** LibriSpeech ASR Corpus.
-* **NATO RSG.10:** NOISEX-92 Military Acoustic Benchmark.
-
----
-
-## Quickstart & Local Reproduction
+## 5. Getting Started (Step-by-Step)
 
 ### Prerequisites
-* Python 3.9+
-* macOS, Linux, or Windows (WSL)
+* Python 3.9 or higher
+* Git installed
+* Operating System: Linux, macOS, or Windows WSL
 
-### 1. Clone & Set Up Virtual Environment
+### Step 1: Clone the repository and set up a virtual environment
 ```bash
 git clone https://github.com/YOUR_USERNAME/sonic-shield.git
 cd sonic-shield
 python3 -m venv venv
 source venv/bin/activate
-pip install torch soundfile librosa matplotlib pystoi streamlit
+# For Windows command prompt: venv\Scripts\activate
 ```
 
-### 2. Run the Real-Time Streaming Benchmark (<2ms Latency)
+### Step 2: Install dependencies
+```bash
+pip install -r requirements.txt
+```
+*(Or install directly: `pip install torch soundfile librosa matplotlib pystoi streamlit`)*
+
+### Step 3: Run the end-to-end simulation benchmark
 ```bash
 python sonic_shield_pipeline.py
 ```
+This script runs a full streaming audio simulation through the 50ms buffer, TENVAD trigger, Dual-Output DCCRN, and NLMS filter, then prints the exact execution latency per frame and audio quality metrics.
 
-### 3. Open the Interactive Testbench Dashboard
-Double-click `simulation.html` in your file browser, or run:
+### Step 4: Open the interactive audio testbench
+You can listen to audio clips comparing raw combat recordings against the enhanced Sonic SHIELD output directly in your web browser:
 ```bash
+# On macOS:
 open simulation.html
+
+# On Linux:
+xdg-open simulation.html
+
+# Or simply double-click the simulation.html file in your file explorer.
 ```
 
 ---
 
-## Team PHALANX
-* **Team Name:** Team PHALANX  
-* **Problem Statement:** SIH 26052 — AI/ML-Enabled Adaptive Noise Cancellation System for Defence  
-* **Category:** Hardware / Embedded DSP  
-* **Status:** Smart India Hackathon 2026 Round 1 Submission
+## 6. Technical References and Citations
+
+The architectural decisions in Sonic SHIELD build directly upon peer-reviewed speech enhancement and adaptive filtering literature:
+
+1. **Phase-aware Complex Modeling:** Hu, Y. et al. *"DCCRN: Deep Complex Convolution Recurrent Network for Phase-Aware Speech Enhancement"*, Interspeech 2020.
+2. **Adaptive Filtering & Normalization:** Haykin, S. *"Adaptive Filter Theory"*, 5th Edition, Pearson Education.
+3. **Interactive Speech-Noise Estimation:** Zheng, C. et al. *"Interactive Speech and Noise Modeling for Speech Enhancement (SN-Net)"*, AAAI 2021.
+4. **Embedded Hybrid DSP/AI:** Valin, J.-M. *"A Hybrid DSP/Deep Learning Approach to Real-Time Full-Band Speech Enhancement (RNNoise)"*, IEEE MMSP 2018.
+
+For a deeper dive into the mathematical derivations and comparative study, see [REFERENCES.md](REFERENCES.md) and [docs/LITERATURE_SURVEY_ANALYSIS.md](docs/LITERATURE_SURVEY_ANALYSIS.md).
+
+---
+
+## 7. Team & Submission Details
+
+* **Event:** Smart India Hackathon (SIH 2026)
+* **Problem Statement:** SIH 26052 — AI/ML-Enabled Adaptive Noise Cancellation System for Tactical Defence Communications
+* **Category:** Hardware / Embedded DSP
+* **Team Name:** Team PHALANX
+* **Institution:** Sarvajanik College of Engineering and Technology (SCET), Surat
