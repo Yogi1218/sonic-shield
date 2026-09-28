@@ -568,22 +568,22 @@
     <div class="pipeline-strip">
         <div class="pipe-step active" id="pStep1">
             <span class="step-num">01</span>
-            <span class="step-label">NOISY DEFENCE AUDIO</span>
+            <span class="step-label">INPUT (SPEECH + TRI-MODAL NOISE)</span>
         </div>
         <div class="pipe-arrow" id="pArr1">→</div>
         <div class="pipe-step" id="pStep2">
             <span class="step-num">02</span>
-            <span class="step-label">NOISE ANALYSIS</span>
+            <span class="step-label">50ms BUFFER + TENVAD TRIGGER</span>
         </div>
         <div class="pipe-arrow" id="pArr2">→</div>
         <div class="pipe-step" id="pStep3">
             <span class="step-num">03</span>
-            <span class="step-label">ADAPTIVE ANC</span>
+            <span class="step-label">DUAL-OUTPUT DCCRN + NLMS</span>
         </div>
         <div class="pipe-arrow" id="pArr3">→</div>
         <div class="pipe-step" id="pStep4">
             <span class="step-num">04</span>
-            <span class="step-label">ENHANCED SPEECH</span>
+            <span class="step-label">ENHANCED SPEECH (CLEAN TX)</span>
         </div>
     </div>
 
@@ -592,7 +592,7 @@
         <!-- Col 1: Input Stage -->
         <div class="rack-panel">
             <div class="panel-header">
-                <span class="panel-tag">INPUT // NOISY COMMUNICATION</span>
+                <span class="panel-tag">INPUT // NOISY DEFENCE AUDIO</span>
                 <span class="panel-spec">CH-01 RX BUFFER</span>
             </div>
 
@@ -650,46 +650,46 @@
             </div>
 
             <div class="engine-stack">
-                <!-- Step 1 -->
+                <!-- Step 1: Pre-Roll Buffer -->
                 <div class="engine-cell" id="cBlock1">
                     <div class="cell-head">
-                        <span class="cell-title">1. Noise Characterization</span>
+                        <span class="cell-title">1. 50ms Circular Pre-Roll Buffer</span>
                         <span class="cell-state" id="st1">STANDBY</span>
                     </div>
-                    <div class="cell-detail">Calculates stationarity index and harmonic spectral density.</div>
+                    <div class="cell-detail">Preserves onset speech history; guarantees zero first-syllable clipping.</div>
                 </div>
 
                 <div class="flow-caret" id="car1">▼</div>
 
-                <!-- Step 2 -->
+                <!-- Step 2: TENVAD Trigger -->
                 <div class="engine-cell" id="cBlock2">
                     <div class="cell-head">
-                        <span class="cell-title">2. Adaptive Noise Estimation</span>
+                        <span class="cell-title">2. TENVAD Speech-Only Trigger</span>
                         <span class="cell-state" id="st2">STANDBY</span>
                     </div>
-                    <div class="cell-detail">Tracks dynamic acoustic background during voice pauses.</div>
+                    <div class="cell-detail">Tracks vocal formants (300-3400 Hz); puts neural net to sleep during pauses.</div>
                 </div>
 
                 <div class="flow-caret" id="car2">▼</div>
 
-                <!-- Step 3 -->
+                <!-- Step 3: Dual-Output DCCRN -->
                 <div class="engine-cell" id="cBlock3">
                     <div class="cell-head">
-                        <span class="cell-title">3. Neural ANC (Causal DCCRN)</span>
+                        <span class="cell-title">3. Dual-Output Causal DCCRN</span>
                         <span class="cell-state" id="st3">STANDBY</span>
                     </div>
-                    <div class="cell-detail">Complex ratio mask estimates speech phase and magnitude.</div>
+                    <div class="cell-detail">Predicts Complex Ratio Masks (CRM): Speech Mask + Synthetic Noise Reference.</div>
                 </div>
 
                 <div class="flow-caret" id="car3">▼</div>
 
-                <!-- Step 4 -->
+                <!-- Step 4: Always-On NLMS Filter -->
                 <div class="engine-cell" id="cBlock4">
                     <div class="cell-head">
-                        <span class="cell-title">4. Adaptive DSP Filter (NLMS)</span>
+                        <span class="cell-title">4. Always-On NLMS Adaptive Filter</span>
                         <span class="cell-state" id="st4">STANDBY</span>
                     </div>
-                    <div class="cell-detail">Time-domain adaptive post-filter eliminates residual drone tones.</div>
+                    <div class="cell-detail">Sample-by-sample DSP post-filter; subtracts residual drone; freezes during voice.</div>
                 </div>
 
                 <div class="flow-caret" id="car4">▼</div>
@@ -700,7 +700,7 @@
                         <span class="cell-title" style="color: var(--green);">Enhanced Speech Output</span>
                         <span class="cell-state" style="color: var(--green);">READY</span>
                     </div>
-                    <div class="cell-detail">Causal voice transmission with zero future frame lookahead.</div>
+                    <div class="cell-detail">Clean tactical voice stream with high intelligibility (STOI 0.89).</div>
                 </div>
             </div>
         </div>
@@ -905,14 +905,14 @@ function runPipelineDemo() {
     document.getElementById('engStatusTag').style.color = 'var(--cyan)';
 
     setTimeout(() => {
-        // Step 2: Noise Analysis
+        // Step 2: 50ms Buffer & TENVAD
         document.getElementById('pStep2').classList.add('active');
         document.getElementById('pArr2').classList.add('lit');
         document.getElementById('cBlock1').classList.add('active');
-        document.getElementById('st1').innerText = 'IDENTIFIED';
+        document.getElementById('st1').innerText = 'BUFFERED';
         document.getElementById('car1').classList.add('lit');
         document.getElementById('cBlock2').classList.add('active');
-        document.getElementById('st2').innerText = 'TRACKING';
+        document.getElementById('st2').innerText = 'VOICE DETECTED';
     }, 900);
 
     setTimeout(() => {
@@ -921,10 +921,10 @@ function runPipelineDemo() {
         document.getElementById('pArr3').classList.add('lit');
         document.getElementById('car2').classList.add('lit');
         document.getElementById('cBlock3').classList.add('active');
-        document.getElementById('st3').innerText = 'MASKING';
+        document.getElementById('st3').innerText = 'DUAL MASKING';
         document.getElementById('car3').classList.add('lit');
         document.getElementById('cBlock4').classList.add('active');
-        document.getElementById('st4').innerText = 'CONVERGED';
+        document.getElementById('st4').innerText = 'ADAPTIVE CONVERGED';
     }, 2000);
 
     setTimeout(() => {
