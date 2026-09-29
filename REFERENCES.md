@@ -66,12 +66,12 @@ For a full step-by-step mathematical derivation of the filter coefficients and p
 To evaluate performance objectively, we utilized established open research corpora:
 
 1. **Clean Voice Targets:**
-   * **LibriSpeech (train-clean-100):** Provides diverse phonetic speech variations recorded at high fidelity. [OpenSLR Resource 12](https://www.openslr.org/12/)
-   * **LJ Speech Dataset:** Single-speaker clear reading recordings for consistent reference evaluation.
+   * **LJ Speech Dataset 1.1:** 13,100 clean single-speaker voice passages sampled at 22.05 kHz (downsampled to 16 kHz for tactical narrow/wideband standard).
+   * **LibriSpeech (train-clean):** Public acoustic speech corpus providing varied acoustic phonemes across diverse English speakers.
 
 2. **Defence and Environmental Acoustic Noise:**
-   * **NOISEX-92 (NATO RSG.10):** The definitive defence standard for acoustic testing, including recordings inside armored personnel carriers, tank turrets, and fighter jet cockpits.
-   * **ESC-50 Dataset:** Provides non-stationary environmental transient sounds such as wind, sirens, and machinery.
+   * **Military Acoustic Database (MAD Dataset):** Real-world defence operational noise corpus containing field recordings of jet aircraft (F-22 Raptor), transport helicopters, sirens, armored vehicle engines, and weapon discharge acoustics.
+   * **NOISEX-92 (NATO RSG.10):** The definitive military benchmark for steady stationary interference, including tank turret and armored vehicle cabin hum.
 
 ---
 *Authored and maintained by Team PHALANX for Smart India Hackathon 2026 (Problem Statement SIH 26052).*

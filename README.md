@@ -20,46 +20,19 @@ Traditional noise cancelling headsets rely either on classic adaptive filters (l
 
 ---
 
-## 2. How the System Works (Pipeline Flow)
+## 2. System Architecture & Pipeline Flow
 
-```
-                    Single Tactical Microphone Input
-                                  |
-            +---------------------+---------------------+
-            |                                           |
-            v                                           v
-    50ms Rolling Buffer                       TENVAD Trigger Unit
- (Captures speech onset before           (Analyzes voice formant energy
-   clipping first syllables)                between 300 Hz and 3.4 kHz)
-            |                                           |
-            +---------------------+---------------------+
-                                  |
-                       Is vocal speech present?
-                      /                        \
-             [YES: Trigger Awake]         [NO: Low-Power Sleep]
-                      |                                  |
-                      v                                  v
-          Dual-Output Causal DCCRN             Bypass Neural Model
-       (Deep Complex Convolution Net)         (Saves battery & thermals)
-         /                          \                    |
-        v                            v                   |
- Enhanced Speech Mask       Noise Reference Mask         |
-        \                            /                   |
-         +------------+-------------+                    |
-                      |                                  |
-                      v                                  v
-              iSTFT Audio Synthesis               Residual Background
-                      |                                  |
-                      +-------------------+--------------+
-                                          |
-                                          v
-                                Always-On NLMS Filter
-                        (Subtracts residual engine drone;
-                       freezes updates during active voice)
-                                          |
-                                          v
-                              Clean Tactical Speech Output
-```
+<div align="center">
+  <img src="assets/block_diagram.png" alt="Sonic SHIELD Tactical Pipeline Block Diagram" width="800"/>
+</div>
+
+The architecture processes tactical communications through a strictly causal, multi-stage hybrid pipeline:
+* **Single Microphone Input:** In combat conditions, soldiers use ruggedized single-element throat or boom microphones where dual-channel spatial beamforming cannot be applied.
+* **50ms Circular Buffer:** A rolling ring buffer captures the preceding 50 ms of audio to prevent first-syllable clipping when the operator starts speaking.
+* **Speech-Only VAD Trigger (TENVAD):** Operates on vocal formant bands (300 Hz–3400 Hz) to keep the neural network in low-power sleep mode during silence or pure engine hum, activating it only during active speech.
+* **Dual-Output DCCRN (Sleep/Wake):** Predicts complex ratio masks (CRM) in the frequency domain, simultaneously producing an **Enhanced Speech Mask** and a synthetic **Noise Reference Mask**.
+* **Always-On NLMS Filter:** Uses the synthetic noise reference to continuously cancel residual stationary engine hums in the time domain, automatically freezing filter adaptation during active speech to eliminate self-cancellation.
+* **Final Audio Output:** Delivers high-intelligibility, cleaned voice communications directly to the tactical transmitter.
 
 ### Core Design Principles
 
@@ -134,29 +107,38 @@ python sonic_shield_pipeline.py
 This script runs a full streaming audio simulation through the 50ms buffer, TENVAD trigger, Dual-Output DCCRN, and NLMS filter, then prints the exact execution latency per frame and audio quality metrics.
 
 ### Step 4: Open the interactive audio testbench
-You can listen to audio clips comparing raw combat recordings against the enhanced Sonic SHIELD output directly in your web browser:
-```bash
-# On macOS:
-open simulation.html
+You can run and test the interactive SDR audio testbench in two ways:
 
-# On Linux:
-xdg-open simulation.html
+1. **Direct Online Simulation Link:**  
+   Access the deployed interactive audio SDR testbench directly in your web browser:  
+   * **[https://yogi1218.github.io/sonic-shield/](https://yogi1218.github.io/sonic-shield/)**  
+   * *(Alternative direct link: [https://yogi1218.github.io/sonic-shield/simulation.html](https://yogi1218.github.io/sonic-shield/simulation.html))*
 
-# Or simply double-click the simulation.html file in your file explorer.
-```
+2. **Local Offline Execution:**  
+   Open `simulation.html` directly on your machine:
+   ```bash
+   # On macOS:
+   open simulation.html
+
+   # On Linux:
+   xdg-open simulation.html
+
+   # Or double-click simulation.html in any modern browser.
+   ```
 
 ---
 
-## 6. Technical References and Citations
+## 6. Datasets & Evaluation Corpora
 
-The architectural decisions in Sonic SHIELD build directly upon peer-reviewed speech enhancement and adaptive filtering literature:
+To evaluate and train the hybrid pipeline, we utilized standardized acoustic corpora:
 
-1. **Phase-aware Complex Modeling:** Hu, Y. et al. *"DCCRN: Deep Complex Convolution Recurrent Network for Phase-Aware Speech Enhancement"*, Interspeech 2020.
-2. **Adaptive Filtering & Normalization:** Haykin, S. *"Adaptive Filter Theory"*, 5th Edition, Pearson Education.
-3. **Interactive Speech-Noise Estimation:** Zheng, C. et al. *"Interactive Speech and Noise Modeling for Speech Enhancement (SN-Net)"*, AAAI 2021.
-4. **Embedded Hybrid DSP/AI:** Valin, J.-M. *"A Hybrid DSP/Deep Learning Approach to Real-Time Full-Band Speech Enhancement (RNNoise)"*, IEEE MMSP 2018.
+1. **Speech Target Corpus:**
+   * **LJ Speech Dataset 1.1:** Single-speaker clean reading voice recordings sampled at 16 kHz, used to benchmark clean formant retention and speech intelligibility.
+   * **LibriSpeech (train-clean):** Auxiliary multi-speaker phonetic variation dataset for causal generalization.
 
-For a deeper dive into the mathematical derivations and comparative study, see [REFERENCES.md](REFERENCES.md) and [docs/LITERATURE_SURVEY_ANALYSIS.md](docs/LITERATURE_SURVEY_ANALYSIS.md).
+2. **Tactical Defence Noise Corpus:**
+   * **Military Acoustic Database (MAD Dataset):** Real-world defence acoustic recordings categorized into military aircraft (F-22 Raptor, helicopters), heavy armored vehicle engine rumbles, sirens, and combat environmental noise.
+   * **NOISEX-92 (NATO RSG.10):** Standard defence acoustic benchmark for stationary tank turret and cockpit noise.
 
 ---
 

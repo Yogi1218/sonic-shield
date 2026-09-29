@@ -19,3 +19,17 @@ sim_*.wav
 # OS files
 .DS_Store
 Thumbs.db
+
+# Submission documents & large assets
+*.docx
+*.xlsx
+*.pptx
+dist/
+*.wav
+DDARSH
+PHOTO*
+embed_*.py
+make_audio_assets.py
+serve_dist.py
+run_sim.sh
+logo.jpg
