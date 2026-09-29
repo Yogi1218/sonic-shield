@@ -74,7 +74,7 @@ Traditional noise cancelling headsets rely either on classic adaptive filters (l
 
 We tested the complete pipeline against simulated combat audio combining clean speech (LibriSpeech corpus), steady engine noise (NOISEX-92 benchmark), and sharp impulsive gunshot blasts down to negative signal-to-noise ratios (-5 dB SNR):
 
-| Evaluation Metric | Noisy Tactical Input | Sonic SHIELD Output | Minimum Required | Standard Tested |
+| Evaluation Metric | Noisy Tactical Input | Estimated Output | Minimum Required | Standard Tested |
 | :--- | :---: | :---: | :---: | :--- |
 | **Signal-to-Noise Ratio (SNR)** | **-5.00 dB** | **+16.80 dB** | > 15 dB (+21.8 dB gain) | ITU-T P.56 |
 | **Speech Intelligibility (STOI)** | **0.65** | **0.89** | > 0.85 (Clear comprehension) | Short-Time Objective Intelligibility |
