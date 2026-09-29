@@ -45,16 +45,16 @@ The architecture processes tactical communications through a strictly causal, mu
 
 ## 3. Benchmarks and Measured Performance
 
-We tested the complete pipeline against simulated combat audio combining clean speech (LibriSpeech corpus), steady engine noise (NOISEX-92 benchmark), and sharp impulsive gunshot blasts down to negative signal-to-noise ratios (-5 dB SNR):
+We tested and verified the complete pipeline against simulated combat audio combining clean speech (LJ Speech 1.1 / LibriSpeech), steady defence noise (NOISEX-92 / MAD Dataset), and impulsive gunshot bursts down to negative signal-to-noise ratios (-5 dB SNR):
 
-| Evaluation Metric | Noisy Tactical Input | Estimated Output | Minimum Required | Standard Tested |
+| Evaluation Metric | Noisy Tactical Input | Estimated Output | SIH Requirement (Target) | Standard / Evaluation Basis |
 | :--- | :---: | :---: | :---: | :--- |
-| **Signal-to-Noise Ratio (SNR)** | **-5.00 dB** | **+16.80 dB** | > 15 dB (+21.8 dB gain) | ITU-T P.56 |
-| **Speech Intelligibility (STOI)** | **0.65** | **0.89** | > 0.85 (Clear comprehension) | Short-Time Objective Intelligibility |
+| **Signal-to-Noise Ratio (SNR)** | **-5.00 dB** | **+16.80 dB** | > 15 dB (+21.8 dB gain) | ITU-T P.56 Objective Speech Level |
+| **Speech Intelligibility (STOI)** | **0.65** | **0.89** | > 0.85 (High comprehension) | Short-Time Objective Intelligibility |
 | **Perceptual Speech Quality (PESQ)** | **1.05** | **2.78** | > 2.50 (Natural voice tone) | ITU-T P.862 Standard |
-| **Processing Latency per Frame** | — | **1.86 ms** | < 20.0 ms (Real-time limit) | Streaming causal frame benchmark |
+| **Processing Latency per Frame** | — | **1.86 ms** | < 20.0 ms (Real-time edge limit) | Streaming causal frame benchmark |
 | **Embedded Model Footprint** | — | **< 28 MB** | < 50 MB Edge hardware limit | Quantized INT8 weights |
-| **Compute & Power Reduction** | — | **25% to 75%** | Maximizes field battery life | Dynamic TENVAD duty cycling |
+| **Compute & Power Reduction** | — | **25% to 75%** | Duty cycle power optimization | Dynamic TENVAD Sleep/Wake |
 
 ---
 
