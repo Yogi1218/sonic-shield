@@ -78,55 +78,21 @@ We tested and verified the complete pipeline against simulated combat audio comb
 
 ---
 
-## 5. Getting Started (Step-by-Step)
+## 5. Simulation & Reproduction Guide
 
-### Prerequisites
-* Python 3.9 or higher
-* Git installed
-* Operating System: Linux, macOS, or Windows WSL
+### Interactive Online Testbench (Instant Browser Verification)
+Evaluators can test the complete real-time adaptive noise cancellation pipeline directly in the browser with live tactical audio playback, waveform graticules, and spectrum views:
+* **Live Deployment:** **[https://yogi1218.github.io/sonic-shield/](https://yogi1218.github.io/sonic-shield/)**
 
-### Step 1: Clone the repository and set up a virtual environment
+### Local Execution & Latency Benchmark
+To verify the end-to-end causal streaming pipeline (<2.0 ms frame latency) on your local machine:
 ```bash
-git clone https://github.com/YOUR_USERNAME/sonic-shield.git
+git clone https://github.com/Yogi1218/sonic-shield.git
 cd sonic-shield
-python3 -m venv venv
-source venv/bin/activate
-# For Windows command prompt: venv\Scripts\activate
-```
-
-### Step 2: Install dependencies
-```bash
 pip install -r requirements.txt
-```
-*(Or install directly: `pip install torch soundfile librosa matplotlib pystoi streamlit`)*
-
-### Step 3: Run the end-to-end simulation benchmark
-```bash
 python sonic_shield_pipeline.py
 ```
-This script runs a full streaming audio simulation through the 50ms buffer, TENVAD trigger, Dual-Output DCCRN, and NLMS filter, then prints the exact execution latency per frame and audio quality metrics.
-
-### Step 4: Open the interactive audio testbench
-You can run and test the interactive SDR audio testbench in two ways:
-
-1. **Direct Online Simulation Link:**  
-   Access the deployed interactive audio SDR testbench directly in your web browser:  
-   * **[https://yogi1218.github.io/sonic-shield/](https://yogi1218.github.io/sonic-shield/)**  
-   * *(Alternative direct link: [https://yogi1218.github.io/sonic-shield/simulation.html](https://yogi1218.github.io/sonic-shield/simulation.html))*
-
-2. **Local Offline Execution:**  
-   Open `simulation.html` directly on your machine:
-   ```bash
-   # On macOS:
-   open simulation.html
-
-   # On Linux:
-   xdg-open simulation.html
-
-   # Or double-click simulation.html in any modern browser.
-   ```
-
----
+This runs real-time 10ms frame processing through the circular buffer, TENVAD trigger, Dual-Output DCCRN, and NLMS filter, logging per-frame execution times and auditory verification files.
 
 ## 6. Datasets & Evaluation Corpora
 
