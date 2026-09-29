@@ -99,12 +99,16 @@ This runs real-time 10ms frame processing through the circular buffer, TENVAD tr
 To evaluate and train the hybrid pipeline, we utilized standardized acoustic corpora:
 
 1. **Speech Target Corpus:**
-   * **LJ Speech Dataset 1.1:** Single-speaker clean reading voice recordings sampled at 16 kHz, used to benchmark clean formant retention and speech intelligibility.
-   * **LibriSpeech (train-clean):** Auxiliary multi-speaker phonetic variation dataset for causal generalization.
+   * **LJ Speech Dataset 1.1:** Single-speaker clean reading voice recordings (13,100 clips) sampled at 22.05 kHz and downsampled to 16 kHz for tactical narrow/wideband audio standards.  
+     *Source:* [https://keithito.com/LJ-Speech-Dataset/](https://keithito.com/LJ-Speech-Dataset/)
+   * **LibriSpeech (train-clean):** Standard open-source public corpus used to evaluate multi-speaker phonetic variation.  
+     *Source:* [https://www.openslr.org/12/](https://www.openslr.org/12/)
 
 2. **Tactical Defence Noise Corpus:**
-   * **Military Acoustic Database (MAD Dataset):** Real-world defence acoustic recordings categorized into military aircraft (F-22 Raptor, helicopters), heavy armored vehicle engine rumbles, sirens, and combat environmental noise.
-   * **NOISEX-92 (NATO RSG.10):** Standard defence acoustic benchmark for stationary tank turret and cockpit noise.
+   * **Military Acoustic Database (MAD Dataset):** Operational defence acoustic recordings categorized into military jet aircraft (F-22 Raptor), transport helicopters, sirens, armored vehicle engines, and weapon discharge acoustics.  
+     *Reference:* Standard tactical acoustic noise callset categorized by military vehicle and weapon type.
+   * **NOISEX-92 (NATO RSG.10):** Official NATO military acoustic benchmark for stationary tank turret, armored personnel carrier, and cockpit cabin noise.  
+     *Reference:* NATO Research Study Group RSG.10 military acoustic benchmark repository.
 
 ---
 
