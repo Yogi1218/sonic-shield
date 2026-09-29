@@ -9,34 +9,9 @@
 
 The Normalized Least Mean Squares (NLMS) filter operates in the **Time-Domain DSP** stage of the Sonic SHIELD pipeline. It acts as an adaptive post-filter downstream of the Frequency-Domain Dual-Output DCCRN to subtract stationary and slowly varying residual acoustic interference (tank engine rumble, diesel generators, constant cabin hum).
 
-```
-                      +-------------------+
-Reference Noise x(n)  |    Delay Line     | x(n) = [x(n), x(n-1), ..., x(n-N+1)]^T
-(from DCCRN Mask) --->| z^-1 | z^-1 | ... |-------------------+
-                      +-------------------+                   |
-                                                              v
-                                                   +---------------------+
-                                                   | Adaptive FIR Filter |
-                                                   |  y(n) = w^T(n) x(n) |
-                                                   +---------------------+
-                                                              |
-                                                    Estimated | y(n)
-                                                    Noise     v
-Primary Signal d(n) ---------------------------------------->( - )
-(Enhanced Speech + Residual Noise)                            |
-                                                      Error   | e(n) = d(n) - y(n)
-                                                      Signal  v
-                                              [ Enhanced Clean Speech Output ]
-                                                              |
-                                                              |
-                       +--------------------------------------+
-                       | Feedback Loop
-                       v
-         +----------------------------+
-         | Normalized Weight Update   |
-         | w(n+1) = w(n) + mu(n)e(n)x |<--- Reference Power P_x(n) = x^T(n) x(n)
-         +----------------------------+
-```
+<div align="center">
+  <img src="../assets/nlms_circuit_diagram.png" alt="Normalized Least Mean Squares (NLMS) Adaptive Filter Architecture" width="850"/>
+</div>
 
 ### Signal Representations:
 1. **Primary Signal $d(n)$:**
