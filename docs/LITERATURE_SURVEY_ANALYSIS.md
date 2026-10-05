@@ -1,6 +1,6 @@
 # Literature Survey & Research Gap Analysis
 
-### Project: Sonic SHIELD — AI/ML-Enabled Adaptive Noise Cancellation (ANC) for Defence Communications on Embedded Hardware
+### Project: Sonic SHIELD — Hybrid AI-Driven Real-Time Speech Enhancement for Defence Communications
 ### Team: Team PHALANX | Problem Statement: SIH 26052
 
 ---

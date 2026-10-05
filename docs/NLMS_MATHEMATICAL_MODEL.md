@@ -1,6 +1,6 @@
 # Normalized Least Mean Squares (NLMS) Adaptive Filter: Mathematical Foundation & Architecture
 
-### Project: Sonic SHIELD — Tactical Defence ANC
+### Project: Sonic SHIELD — Hybrid AI-Driven Real-Time Speech Enhancement for Defence Communications
 ### Team: Team PHALANX | Problem Statement: SIH 26052
 
 ---

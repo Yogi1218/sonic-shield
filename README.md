@@ -1,4 +1,4 @@
-# Sonic SHIELD: Adaptive Noise Cancellation for Defence Radios
+# Sonic SHIELD: Hybrid AI-Driven Real-Time Speech Enhancement for Defence Communications
 
 Smart India Hackathon 2026 | Problem Statement: SIH 26052 | Category: Hardware / Embedded DSP  
 Team: PHALANX | Department of Electronics and Communication Engineering, SCET Surat

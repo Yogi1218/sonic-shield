@@ -1,6 +1,6 @@
 """
 ========================================================================================
-Project: Sonic SHIELD — Tactical Adaptive Noise Cancellation System
+Project: Sonic SHIELD — Hybrid AI-Driven Real-Time Speech Enhancement for Defence Communications
 Target: Embedded ARM / Edge DSP Pipeline (<20ms latency, Low Thermal Footprint)
 Architecture:
   - Single Mic Input (Mixed Speech + Defence Noise)
